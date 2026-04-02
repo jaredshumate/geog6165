@@ -1,0 +1,110 @@
+
+.container {
+  min-height: 100%;
+  display: flex;
+}
+
+#page-title{
+     text-align: center;
+    font-family: Palatino;
+    font-size: 48px;
+    font-weight: bold;
+}
+.topnav{
+    display: flex;
+    justify-content: center;
+    background-color: rgb(255, 255, 255);
+    padding: 10px 10px;
+    border: solid black 2px;
+    margin: 10px 20px;
+    gap: 20px;
+    font-family: Palatino;
+    font-size: 20px;
+
+}
+
+.bottomnav{
+    align-content: center;
+    margin: 10px;
+    padding: 10px;
+    border: solid black 2px;
+    background-color: white;
+}
+.bottomnav a{
+     align-content: center;
+    margin: 10px;
+    padding: 10px;
+    gap: 20px;
+    
+}
+.nav{
+    background-color: beige;
+    width: 200px;
+    padding: 20px;
+    font-family: Palatino;
+    font-size: 18px;
+    height: 100%;
+    border: solid black 4px;
+    margin: 20px 10px;
+    
+}
+h3{
+    color:black;
+    font-size: 32px;
+    font-weight: bolder;
+    font-family: Palatino;
+    text-align: center;
+
+}
+header{
+    background-color: crimson;
+    color: white;
+    padding: 10px;
+    margin: 5px 20px;
+    text-align: center;
+    font-family: Palatino;
+    font-weight: bold;
+    font-size: 24px;
+    border: solid black 4px;
+}
+img{
+    border: solid black 4px;
+    margin:20px 20px;
+}
+.profile{
+   font-family: Palatino;
+    font-size: 18px;
+    padding: 20px;
+}
+
+H4{
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0px;
+}
+.research{
+  font-family: Palatino;
+    font-size: 18px;
+    padding: 10px 20px;
+    margin-top: 0px;
+}
+footer{
+    background-color: crimson;
+    color: white;
+    padding: 10px;
+    margin: 5px 20px;
+    text-align: center;
+    font-family: Palatino;
+    font-weight: bold;
+    font-size: 24px;
+    border: solid black 4px;
+}
+.footnote a{
+    color:white;
+    font-size:14px;
+    font-family: Palatino;
+    text-align: center;
+    padding: 10px 5px;
+    margin:5px 80px;
+    
+}
