@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Salt Lake Area Avalanche Danger</title>
+<style>
+  html, body, #viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+  }
+
+  #rose-img {
+  position: absolute;
+  bottom: 30px;
+  right: 15px;
+  width: 220px;
+  z-index: 999;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+</style>
+<link rel="stylesheet" href="https://js.arcgis.com/4.11/esri/css/main.css">
+<script src="https://js.arcgis.com/4.11/"></script>
+<script>
+
+// --- MANUALLY SET YOUR DANGER VALUES HERE (index 0-23) ---
+const dangerRose = [6, 6, 6, 4, 4, 4, 6, 6, 6, 6, 6, 2, 2, 2, 2, 6, 4, 4, 2, 2, 2, 2, 2, 4];
+//                  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+
+function getDangerColor(val) {
+  const colors = {
+    0:  "#eeeeee", //No rating
+    1:  "#0D851F", // Low
+    2:  "#0D851F", // Low
+    3:  "#D8F516", // Moderate
+    4:  "#D8F516", // Moderate
+    5:  "#ff9005", // Considerable
+    6:  "#ff9005", // COnsiderable
+    7:  "#ff0000", // High
+    8:  "#ff0000", // High
+    9:  "#ff0000", // Extreme
+    10: "#000000", // Extreme
+    14: "#eeeeee", // No Rating
+  };
+  return colors[val] ?? "#cccccc";
+}
+
+require([
+  "esri/Map",
+  "esri/views/MapView",
+  "esri/widgets/ScaleBar",
+  "esri/layers/GeoJSONLayer",
+  "esri/widgets/LayerList",
+  "esri/widgets/BasemapToggle",
+  "esri/renderers/UniqueValueRenderer",
+  "dojo/domReady!"
+], function(Map, MapView, ScaleBar, GeoJSONLayer, LayerList, BasemapToggle, UniqueValueRenderer) {
+
+  var map = new Map({ basemap: "topo" });
+
+  var view = new MapView({
+    container: "viewDiv",
+    map: map,
+    zoom: 9,
+    center: [-111.5, 40.7]
+  });
+
+  // Build renderer from dangerRose array
+  var uniqueValueInfos = [];
+  for (var i = 0; i <= 23; i++) {
+    var dangerVal = dangerRose[i];
+    var color = getDangerColor(dangerVal);
+    uniqueValueInfos.push({
+      value: i,
+      symbol: {
+        type: "simple-fill",
+        color: color,
+        outline: null
+      },
+      label: `Zone ${i} (Danger: ${dangerVal})`
+    });
+  }
+
+  var renderer = new UniqueValueRenderer({
+    field: "index_val",
+    uniqueValueInfos: uniqueValueInfos
+  });
+
+  var dangerLayer = new GeoJSONLayer({
+    url: "https://raw.githubusercontent.com/jaredshumate/geog6165/final_project/avy_polygon_dissolve.geojson",
+    renderer: renderer,
+    title: "Avalanche Danger"
+  });
+
+  map.add(dangerLayer);
+
+  dangerLayer.when(function() {
+    view.goTo(dangerLayer.fullExtent);
+  });
+
+ 
+  var scalebar = new ScaleBar({ view: view, unit: "dual" });
+  var layerList = new LayerList({ view: view, statusIndicatorsVisible: true });
+  var basemapToggle = new BasemapToggle({ view: view, nextBasemap: "hybrid" });
+
+  view.ui.add([
+    { component: scalebar,      position: "bottom-left" },
+    { component: layerList,     position: "top-right"   },
+    { component: basemapToggle, position: "top-left"    }
+  ]);
+
+});
+</script>
+</head>
+<body>
+  <div id="viewDiv"></div>
+  <img id="rose-img" src="https://utahavalanchecenter.org/sites/default/files/forecast/202603/20260301-005609-0.png" alt="Danger Rose"/>
+  
+</body>
+</html>
