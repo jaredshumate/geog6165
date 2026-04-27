@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Salt Lake Area Avalanche Danger</title>
+<style>
+  html, body, #viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+  }
+</style>
+<link rel="stylesheet" href="https://js.arcgis.com/4.10/esri/css/main.css">
+<script src="https://js.arcgis.com/4.11/"></script>
+<script>
+
+// --- Step 1: Fetch UAC danger rose, then build the map ---
+const REGION = "salt-lake"; // change to: logan, ogden, salt-lake, provo, uintas, skyline
+
+fetch(`https://utahavalanchecenter.org/forecast/${REGION}/json`)
+  .then(res => res.json())
+  .then(data => {
+    const dangerRose = data[0].overall_danger_rose;
+    console.log("Danger rose:", dangerRose);
+    buildMap(dangerRose);
+  })
+  .catch(err => {
+    console.warn("UAC fetch failed, using fallback neutral colors:", err);
+    buildMap(null); // still loads map if API is down
+  });
+
+function getDangerColor(val) {
+  const colors = {
+    0:  "#eeeeee",  // No Rating
+    1:  "#39ff14",  // Pockets of low danger
+    2:  "#39ff14",  // Low danger
+    3:  "#fdf542",  // Pockets of moderate danger
+    4:  "#fdf542",  // Moderate danger
+    5:  "#ff9005",  // Pockets of considerable danger
+    6:  "#ff9005",  // Considerable danger
+    7:  "#ff0000",  // Pockets of high danger
+    8:  "#ff0000",  // High Danger
+    9:  "#ff0000",  // Pockets of extreme danger
+    10: "#000000",  // Extreme danger
+    14: "#eeeeee",  // No Rating
+  };
+  return colors[val] ?? "#cccccc";
+}
+
+function buildMap(dangerRose) {
+  require([
+    "esri/Map",
+    "esri/views/MapView",
+    "esri/widgets/ScaleBar",
+    "esri/layers/GeoJSONLayer",
+    "esri/widgets/Legend",
+    "esri/widgets/LayerList",
+    "esri/widgets/BasemapToggle",
+    "esri/renderers/UniqueValueRenderer",
+    "dojo/domReady!"
+  ], function(Map, MapView, ScaleBar, GeoJSONLayer, Legend, LayerList, BasemapToggle, UniqueValueRenderer) {
+
+    var map = new Map({ basemap: "streets" });
+
+    var view = new MapView({
+      container: "viewDiv",
+      map: map,
+      zoom: 9,
+      center: [-111.5, 40.7]  // Utah
+    });
+
+    // --- Step 2: Build UniqueValueRenderer from danger rose array ---
+    // Each unique value corresponds to an index_val (0-24)
+    var uniqueValueInfos = [];
+
+    for (var i = 0; i <= 23; i++) {
+      var dangerVal = dangerRose ? dangerRose[i] : 0;
+      var color = getDangerColor(dangerVal);
+
+      uniqueValueInfos.push({
+        value: i,  // matches index_val field
+        symbol: {
+          type: "simple-fill",
+          color: color,
+          outline: { color: "#333333", width: 0.5 }
+        },
+        label: `Zone ${i} (Danger: ${dangerVal})`
+      });
+    }
+
+    var renderer = new UniqueValueRenderer({
+      field: "index_val",  // your polygon field
+      uniqueValueInfos: uniqueValueInfos
+    });
+
+    // --- Step 3: Add your polygon FeatureLayer with the renderer ---
+    var dangerLayer = new GeoJSONLayer({
+      url: "avy_polygon.geojson",  // <-- swap this in
+      renderer: renderer,
+      title: "Avalanche Danger"
+    });
+
+    map.add(dangerLayer);
+
+    // --- Widgets (same as your original) ---
+    var scalebar = new ScaleBar({ view: view, unit: "dual" });
+
+    var legend = new Legend({
+      view: view,
+      style: { type: "card", layout: "stack" }
+    });
+
+    var layerList = new LayerList({
+      view: view,
+      statusIndicatorsVisible: true
+    });
+
+    var basemapToggle = new BasemapToggle({
+      view: view,
+      nextBasemap: "hybrid"
+    });
+
+    view.ui.add([
+      { component: scalebar,      position: "bottom-left"  },
+      { component: legend,        position: "bottom-right" },
+      { component: layerList,     position: "top-right"    },
+      { component: basemapToggle, position: "top-left"     }
+    ]);
+
+  });
+}
+</script>
+</head>
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>
